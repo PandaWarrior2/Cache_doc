@@ -262,7 +262,7 @@
 	\end{figure}\\
 
     \begin{tikzpicture}[->, >=stealth', shorten >=1pt, auto, node    distance=4cm,thick, main node/.style={circle, draw, font=\sffamily\Large}]
-    \node[state] (S1) {$S_1$};
+    \node[initial right, state] (S1) {$S_1$};
     \node[state] (S2) [below=of S1] {$S_2$};
     \node[state] (S3) [left=of S1] {$S_3$};
     \node[state] (S4) [below left=of S3] {$S_4$};
