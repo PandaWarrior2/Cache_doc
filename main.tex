@@ -14,6 +14,8 @@
 \usepackage{longtable}
 \usepackage{textcomp}
 \usepackage{geometry} 
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.9}
 \geometry{verbose,a4paper,tmargin=2cm,bmargin=2cm,lmargin=3.0cm,rmargin=1.5cm}
 \usepackage[style=numeric]{biblatex}
 \addbibresource{sample.bib}
@@ -25,6 +27,8 @@
 \addto\captionsrussian{\renewcommand{\figurename}{Рисунок}}
 \DeclareCaptionFormat{1}{2}
 \captionsetup{justification=centering,labelsep=defffis}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata,positioning}
 
 \addto\captionsenglish{% Replace "english" with the language you use
   \renewcommand{\contentsname}%
@@ -256,6 +260,26 @@
 		\center{\includegraphics[scale=0.7]{fig7}}
 		\caption{УГО кэш-контроллера}
 	\end{figure}\\
+
+    \begin{tikzpicture}[->, >=stealth', shorten >=1pt, auto, node    distance=4cm,thick, main node/.style={circle, draw, font=\sffamily\Large}]
+    \node[state] (S1) {$S_1$};
+    \node[state] (S2) [below=of S1] {$S_2$};
+    \node[state] (S3) [left=of S1] {$S_3$};
+    \node[state] (S4) [below left=of S3] {$S_4$};
+    \node[state] (S5) [right=2cm of S4] {$S_5$};
+    \node[state] (S6) [left= 2cm of S2] {$S_6$};
+    
+    \path[every node/.style={font=\sffamily\small}, label distance=9pt]
+        (S1) edge [above] node[above=4pt] {$hit\And(sys\_rd\oplus sys\_wr)$} (S3)
+        (S1) edge  node[sloped] {$ hit = 0$} (S2)
+        (S2) edge  node[sloped] {$ram\_rack = 1$} (S6)
+        (S6) edge  node {$ $} (S3)
+        (S3) edge  node[above, sloped] {$Read$} (S4)
+        (S3) edge  node[above, sloped] {$Write$} (S5)
+        (S5) edge  node {$ $} (S4)
+        (S4) edge  node {$ $} (S1); 
+    \end{tikzpicture}
+
 	\subsubsection{Модуль взаимодействия с ОЗУ}
 	\begin{figure}[h!]
 		\center{\includegraphics[scale=0.7]{fig8}}
