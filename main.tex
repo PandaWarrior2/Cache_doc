@@ -15,6 +15,7 @@
 \usepackage{textcomp}
 \usepackage{geometry} 
 \usepackage{pgfplots}
+\usepackage{circuitikz}
 \pgfplotsset{compat=1.9}
 \geometry{verbose,a4paper,tmargin=2cm,bmargin=2cm,lmargin=3.0cm,rmargin=1.5cm}
 \usepackage[style=numeric]{biblatex}
@@ -27,7 +28,7 @@
 \addto\captionsrussian{\renewcommand{\figurename}{Рисунок}}
 \DeclareCaptionFormat{1}{2}
 \captionsetup{justification=centering,labelsep=defffis}
-\usepackage{tikz}
+\usepackage{pgf, tikz}
 \usetikzlibrary{arrows,automata,positioning}
 
 \addto\captionsenglish{% Replace "english" with the language you use
@@ -47,7 +48,8 @@
     \vspace{6em}                                                          
     \end{center}                                                          
                                                                                         
-    \vspace{1.2em}                                                        
+    \vspace{1.2em}       
+
                                                                                         
     \begin{center}                                                        
     %\textsc{\textbf{}}                                     
@@ -214,19 +216,132 @@
 	
 	2. Разработана функциональная схема системы памяти и её компонентов согласно алгоритмам;
 	
-	3. Реализована система памяти на языке Verilog;
+	3. Реализована система памяти на языке Verilog. Система памяти состоит из следующих компонентов:
+	
+	- Модуль взаимодействия с CPU;\\
+	- Память тэгов;\\
+	- Память данных;\\
+	- Контроллер системы памяти;\\
+	- Модуль взаимодействия с RAM;\\
 	
 	4. Разработаны тесты компонентов, а также интеграционные тесты системы памяти на языке SystemVerilog.
-	\subsection{Алгоритмы работы кэш-памяти}
-	
+	\newpage
+	\subsection{Алгоритмы работы кэш-памяти}\\
+	\begin{figure}[h!]
+		\center{\includegraphics[scale=0.5]{cache_algo.png}}
+		\caption{Блок-схема общего алгоритма работы кэш-памяти}
+	\end{figure}\\
+	\begin{figure}[h!]
+		\center{\includegraphics[scale=0.5]{slru_algo.png}}
+		\caption{Блок-схема работы алгоритма вытеснения SLRU}
+	\end{figure}
+	\newpage
 	\subsection{Функциональная схема}
+	\begin{figure}[h!]
+		\center{\includegraphics[scale=0.3]{scheme.png}}
+		\caption{Функциональная схема кэш-памяти}
+	\end{figure}
 	\newpage
 	\subsection{Описание модулей}
+	\subsubsection{Модуль взаимодействия с CPU}
+	\begin{center}
+	\begin{circuitikz}
+    \ctikzset{multipoles/thickness=3}
+    \ctikzset{multipoles/dipchip/width=4}
+    \draw (0,0) node[dipchip,
+    num pins=26, hide numbers, no topmark,
+    external pins width=0](C){CPU\_IFACE};
+    \node [right, font=\tiny] at (C.bpin 1) {sys\_addr<15:0>};
+    \node [right, font=\tiny] at (C.bpin 2) {sys\_wdata<31:0>};
+    \node [right, font=\tiny] at (C.bpin 3) {sys\_bval<3:0>};
+    \node [right, font=\tiny] at (C.bpin 4) {cache\_rdata<31:0>};
+    \node [right, font=\tiny] at (C.bpin 6) {sys\_rd};
+    \node [right, font=\tiny] at (C.bpin 7) {sys\_wr};
+    \node [right, font=\tiny] at (C.bpin 8) {sys\_clk};
+    \node [right, font=\tiny] at (C.bpin 9) {sys\_rst\_n};
+    \node [right, font=\tiny] at (C.bpin 10) {cache\_clk};
+    \node [right, font=\tiny] at (C.bpin 11) {cache\_rst\_n};
+    \node [right, font=\tiny] at (C.bpin 12) {cache\_ack};
+    
+    \node [left, font=\tiny] at (C.bpin 15) {sys\_rdata<31:0>};
+    \node [left, font=\tiny] at (C.bpin 16) {cache\_addr<15:0>};
+    \node [left, font=\tiny] at (C.bpin 17) {cache\_wdata<31:0>};
+    \node [left, font=\tiny] at (C.bpin 18) {cache\_bval<3:0>};
+    \node [left, font=\tiny] at (C.bpin 19) {sys\_ack};
+    \node [left, font=\tiny] at (C.bpin 20) {cache\_rd};
+    \node [left, font=\tiny] at (C.bpin 21) {cache\_wr};
+    \draw (C.bpin 1) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 2) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 3) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 4) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 6) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 7) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 8) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 9) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 10) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 11) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 12) -- ++(-0.5,0) coordinate(extpin);
+    
+    \draw (C.bpin 15) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 16) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 17) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 18) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 19) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 20) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 21) -- ++(0.5,0) coordinate(extpin);
+    % inverse to pin
+    %\node [ocirc, anchor=0](notin2) at (C.bpin 2) {};
+    %\draw (notin2.180) -- (C.bpin 2 -| extpin);
+    
+    %\node [ocirc, anchor=0](notin2) at (C.bpin 7) {};
+    %\draw (notin2.180) -- (C.bpin 7 -| extpizn);
+    
+    \draw (C.bpin 10) ++(0,0.1) -- ++(0.1,-0.1)
+    node[right, font=\tiny] -- ++(-0.1,-0.1);
+    
+    \draw (C.bpin 8) ++(0,0.1) -- ++(0.1,-0.1)
+    node[right, font=\tiny] -- ++(-0.1,-0.1);
+    \end{circuitikz}
+    \end{center}
+    \begin{figure}[h!]
+		\caption{УГО модуля взаимодействия с CPU}
+	\end{figure}
+	
 	\subsubsection{Память тэгов}
 	Модуль памяти тегов отвечает за хранение тегов, а также обеспечивает вытеснение данных в случае, есть кэш-память заполнена. УГО модуля приведено на рисунке 5.\\
 	\begin{figure}[h!]
-		\center{\includegraphics[scale=0.7]{fig5}}
-		\caption{УГО памяти тегов}
+    	\begin{center}
+        	\begin{circuitikz}
+                \ctikzset{multipoles/thickness=3}
+                \ctikzset{multipoles/dipchip/width=4}
+                \draw (0,0) node[dipchip,
+                num pins=12, hide numbers, no topmark,
+                external pins width=0](C){TAG\_MEM};
+                \node [right, font=\tiny] at (C.bpin 1)     {tag<7:0>};
+                \node [right, font=\tiny] at (C.bpin 2)     {idx<3:0>};
+                \node [right, font=\tiny] at (C.bpin 3)     {CLK};
+                \node [right, font=\tiny] at (C.bpin 4)     {nRST};
+                \node [right, font=\tiny] at (C.bpin 5)     {rd};
+                \node [right, font=\tiny] at (C.bpin 6)     {wr};
+                \node [right, font=\tiny] at (C.bpin 9)     {chan<2:0>};
+                \node [right, font=\tiny] at (C.bpin 10)    {SLRU\_pos<2:0>};
+                \node [right, font=\tiny] at (C.bpin 11)    {hit};
+                
+                \draw (C.bpin 1) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 2) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 3) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 4) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 5) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 6) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 9) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 10) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 11) -- ++(-0.5,0) coordinate(extpin);
+                
+                \draw (C.bpin 3) ++(0,0.1) -- ++(0.1,-0.1)
+                node[right, font=\tiny] -- ++(-0.1,-0.1);
+            \end{circuitikz}
+    	\end{center}
+    	\caption{УГО памяти тэгов}
 	\end{figure}\\
 	\textbf{Входы:}\\
 	- CLK - вход синхронизации;\\
@@ -242,10 +357,37 @@
 	
 	\subsubsection{Память данных}
 	Модуль памяти данных отвечает за хранение данных в секции, определяемой индексов и канале, который определяется памятью тегов.\\
-	\begin{figure}[h!]
-		\center{\includegraphics[scale=0.6]{fig6}}
-		\caption{УГО памяти данных}
-	\end{figure}\\\\
+    \begin{figure}[h!]
+    	\begin{center}
+        	\begin{circuitikz}
+                \ctikzset{multipoles/thickness=3}
+                \ctikzset{multipoles/dipchip/width=4}
+                \draw (0,0) node[dipchip,
+                num pins=12, hide numbers, no topmark,
+                external pins width=0](C){DATA\_MEM};
+                \node [right, font=\tiny] at (C.bpin 1)     {CLK};
+                \node [right, font=\tiny] at (C.bpin 2)     {idx<3:0>};
+                \node [right, font=\tiny] at (C.bpin 3)     {nRST};
+                \node [right, font=\tiny] at (C.bpin 4)     {chan<2:0>};
+                \node [right, font=\tiny] at (C.bpin 5)     {data\_in<127:0>};
+                \node [right, font=\tiny] at (C.bpin 6)     {rw};
+                \node [right, font=\tiny] at (C.bpin 10)    {data\_out<127:0>};
+                
+                \draw (C.bpin 1) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 2) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 3) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 4) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 5) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 6) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 10) -- ++(-0.5,0) coordinate(extpin);
+                
+                \draw (C.bpin 1) ++(0,0.1) -- ++(0.1,-0.1)
+                node[right, font=\tiny] -- ++(-0.1,-0.1);
+            \end{circuitikz}
+    	\end{center}
+    	\caption{УГО памяти тэгов}
+	\end{figure}\\
+
 	\textbf{Входы:}\\
 	- CLK - \\
 	- nRST - \\
@@ -256,46 +398,140 @@
 	\textbf{Выходы:}\\
 	- data\_out - \\
 	\subsubsection{Контроллер кэш-памяти}
-	\begin{figure}[h!]
-		\center{\includegraphics[scale=0.7]{fig7}}
-		\caption{УГО кэш-контроллера}
+			\begin{figure}[h!]
+    	\begin{center}
+        	\begin{circuitikz}
+                \ctikzset{multipoles/thickness=3}
+                \ctikzset{multipoles/dipchip/width=4}
+                \draw (0,0) node[dipchip,
+                num pins=16, hide numbers, no topmark,
+                external pins width=0](C){Controller};
+                \node [right, font=\tiny] at (C.bpin 1)     {cache\_rdata<127:0>};
+                \node [right, font=\tiny] at (C.bpin 2)     {CLK};
+                \node [right, font=\tiny] at (C.bpin 3)     {nRST};
+                \node [right, font=\tiny] at (C.bpin 4)     {sys\_rd};
+                \node [right, font=\tiny] at (C.bpin 5)     {sys\_wr};
+                \node [right, font=\tiny] at (C.bpin 6)     {hit};
+                \node [right, font=\tiny] at (C.bpin 7)     {cache\_ack};
+                \node [right, font=\tiny] at (C.bpin 8)     {cache\_avalid};
+                \node [right, font=\tiny] at (C.bpin 9)     {tag\_read};
+                \node [right, font=\tiny] at (C.bpin 10)    {tag\_write};
+                \node [right, font=\tiny] at (C.bpin 11)    {selD};
+                \node [right, font=\tiny] at (C.bpin 12)     {sys\_ack};
+                \node [right, font=\tiny] at (C.bpin 13)     {cache\_rnw};
+                \node [right, font=\tiny] at (C.bpin 14)     {tag\_write\_en};
+                \node [right, font=\tiny] at (C.bpin 15)     {data\_write};
+                
+                \draw (C.bpin 1) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 2) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 3) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 4) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 5) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 6) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 7) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 8) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 9) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 10) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 11) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 12) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 13) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 14) -- ++(-0.5,0) coordinate(extpin);
+                \draw (C.bpin 15) -- ++(-0.5,0) coordinate(extpin);
+                
+                \draw (C.bpin 2) ++(0,0.1) -- ++(0.1,-0.1)
+                node[right, font=\tiny] -- ++(-0.1,-0.1);
+            \end{circuitikz}
+    	\end{center}
+    	\caption{УГО кэш-контроллера}
 	\end{figure}\\
 
     \begin{tikzpicture}[->, >=stealth', shorten >=1pt, auto, node    distance=4cm,thick, main node/.style={circle, draw, font=\sffamily\Large}]
-    \node[initial right, state] (S1) {$S_1$};
-    \node[state] (S2) [below=of S1] {$S_2$};
-    \node[state] (S3) [left=of S1] {$S_3$};
-    \node[state] (S4) [below left=of S3] {$S_4$};
-    \node[state] (S5) [right=2cm of S4] {$S_5$};
-    \node[state] (S6) [left= 2cm of S2] {$S_6$};
+    \node[initial right, state] (S1) {$IDLE$};
+    \node[state] (S2) [below=of S1] {$RRAM$};
+    \node[state] (S7) [below=of S2] {$WAIT$};
+    \node[state] (S3) [left=of S1] {$SELECT$};
+    \node[state] (S4) [below left=of S3] {$ACK$};
+    \node[state] (S5) [right=2cm of S4] {$WRITE_{CR}$};
+    \node[state] (S6) [left= 2cm of S2] {$WRITE_C$};
     
     \path[every node/.style={font=\sffamily\small}, label distance=9pt]
         (S1) edge [above] node[above=4pt] {$hit\And(sys\_rd\oplus sys\_wr)$} (S3)
         (S1) edge  node[sloped] {$ hit = 0$} (S2)
-        (S2) edge  node[sloped] {$ram\_rack = 1$} (S6)
+        (S2) edge  node[sloped] {} (S7)
+        (S7) edge  node[sloped] {$ram\_rack = 1$} (S6)
         (S6) edge  node {$ $} (S3)
         (S3) edge  node[above, sloped] {$Read$} (S4)
         (S3) edge  node[above, sloped] {$Write$} (S5)
         (S5) edge  node {$ $} (S4)
         (S4) edge  node {$ $} (S1); 
-    \end{tikzpicture}
+    \end{tikzpicture}\\
+    \begin{figure}[h!]
+		\caption{Граф состояний контроллера кэш-памяти}
+	\end{figure}\\
+    Описание состояний:\\
+    - \textbf{IDLE} - начальное состояние. В этом состоянии кэш-память ожидает прихода операции.;\\
+    - \textbf{SELECT} - выбор действия (чтение, запись). Переход осуществляется из состояния IDLE при условии кэш-попадания и выбора одного из режимов (чтение или запись), а также из ветви кэш-промаха после записи в кэш-память отсутствующих данных;\\
+    - \textbf{RRAM} - чтение данных из RAM. Переход осуществляется из состояния IDLE при условии кэш-промаха и выбора одного из режимов (чтение или запись);\\
+    - \textbf{WAIT} - ожидание данных из RAM. Переход осуществляется из состояния RRAM сразу. В этом состоянии кэш-память ожидает сигнала ram\_ack от ОЗУ.\\
+    - \textbf{WRITE\_C} - запись отсутствующих данных в кэш-память. Переход осуществляется из состояния WAIT при возникновении сигнала подтверждения от ОЗУ о том, что данные прочитаны. В этом состоянии память записывает тэг в память тэгов, а также данные в память данных.\\
+    - \textbf{WRITE\_CR} - запись данных в кэш-память и ОЗУ. Переход в это состояние осуществляется из состояния SELECT при операции записи. В этом состоянии кэш-память записывает модифицированные данные в память данных, а также формирует транзакцию записи в RAM.\\
+    - \textbf{ACK} - Подтверждение конца транзакции. Переход в это состояние осуществляется из состояния SELECT при выборе операции чтения, а также из состояния WRITE\_CR, после того, как данные записаны в кэш и ОЗУ.
+    
 
 	\subsubsection{Модуль взаимодействия с ОЗУ}
-	\begin{figure}[h!]
-		\center{\includegraphics[scale=0.7]{fig8}}
-		\caption{УГО модуля взаимодействия с ОЗУ}
-	\end{figure}\\
-	\subsubsection{Обработчик данных для записи}
-	\begin{figure}[h!]
-		\center{\includegraphics[scale=0.7]{fig9}}
-		\caption{УГО обработчика данных}
-	\end{figure}\\
-	\begin{figure}[h!]
-		\center{\includegraphics[scale=0.7]{fig8}}
-		\caption{УГО модуля взаимодействия с ОЗУ}
-	\end{figure}\\
-	\newpage
-	\section{Патентное исследование}
+    \begin{circuitikz}
+    \ctikzset{multipoles/thickness=3}
+    \ctikzset{multipoles/dipchip/width=4}
+    \draw (0,0) node[dipchip,
+    num pins=22, hide numbers, no topmark,
+    external pins width=0](C){RAM\_IFACE};
+    \node [right, font=\tiny] at (C.bpin 1) {ram\_clk};
+    \node [right, font=\tiny] at (C.bpin 2) {ram\_rst\_n};
+    \node [right, font=\tiny] at (C.bpin 3) {ram\_ack};
+    \node [right, font=\tiny] at (C.bpin 4) {ram\_rdata<31:0>};
+    \node [right, font=\tiny] at (C.bpin 6) {cache\_clk};
+    \node [right, font=\tiny] at (C.bpin 7) {cache\_rst\_n};
+    \node [right, font=\tiny] at (C.bpin 8) {cache\_rnw};
+    \node [right, font=\tiny] at (C.bpin 9) {cache\_avalid};
+    \node [right, font=\tiny] at (C.bpin 10) {cache\_addr<11:0>};
+    \node [right, font=\tiny] at (C.bpin 11) {cache\_wdata<127:0>};
+    
+    \node [left, font=\tiny] at (C.bpin 15) {cache\_rdata<127:0>};
+    \node [left, font=\tiny] at (C.bpin 16) {cache\_ack};
+    \node [left, font=\tiny] at (C.bpin 17) {ram\_avalid};
+    \node [left, font=\tiny] at (C.bpin 18) {ram\_rnw};
+    \node [left, font=\tiny] at (C.bpin 19) {ram\_wdata<31:0>};
+    \node [left, font=\tiny] at (C.bpin 20) {ram\_addr<11:0>};
+    \draw (C.bpin 1) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 2) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 3) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 4) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 6) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 7) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 8) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 9) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 10) -- ++(-0.5,0) coordinate(extpin);
+    \draw (C.bpin 11) -- ++(-0.5,0) coordinate(extpin);
+    
+    \draw (C.bpin 15) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 16) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 17) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 18) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 19) -- ++(0.5,0) coordinate(extpin);
+    \draw (C.bpin 20) -- ++(0.5,0) coordinate(extpin);
+    % inverse to pin
+    %\node [ocirc, anchor=0](notin2) at (C.bpin 2) {};
+    %\draw (notin2.180) -- (C.bpin 2 -| extpin);
+    
+    %\node [ocirc, anchor=0](notin2) at (C.bpin 7) {};
+    %\draw (notin2.180) -- (C.bpin 7 -| extpizn);
+    
+    \draw (C.bpin 1) ++(0,0.1) -- ++(0.1,-0.1)
+    node[right, font=\tiny] -- ++(-0.1,-0.1);
+    
+    \draw (C.bpin 6) ++(0,0.1) -- ++(0.1,-0.1)
+    node[right, font=\tiny] -- ++(-0.1,-0.1);
+    \end{circuitikz}
 	\newpage
 	\setcounter{secnumdepth}{-1}
 	\section{Заключение}
