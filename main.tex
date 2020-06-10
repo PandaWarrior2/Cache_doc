@@ -446,7 +446,32 @@
 	\textbf{Выходы:}\\
 	- data\_out - выходные, прочитанные данные;\\
 	\subsubsection{Контроллер кэш-памяти}
-			\begin{figure}[h!]
+	Контроллер кэш-памяти обеспечивает совместное взаимодействие всех составляющих модулей подсистемы памяти. Граф состояний и УГО приведены на рисунках 11 и 12 соответственно.
+
+    \begin{tikzpicture}[->, >=stealth', shorten >=1pt, auto, node    distance=4cm,thick, main node/.style={circle, draw, font=\sffamily\Large}]
+    \node[initial right, state] (S1) {$IDLE$};
+    \node[state] (S2) [below=of S1] {$RRAM$};
+    \node[state] (S7) [below=of S2] {$WAIT$};
+    \node[state] (S3) [left=of S1] {$SELECT$};
+    \node[state] (S4) [below left=of S3] {$ACK$};
+    \node[state] (S5) [right=2cm of S4] {$WRITE_{CR}$};
+    \node[state] (S6) [left= 2cm of S2] {$WRITE_C$};
+    
+    \path[every node/.style={font=\sffamily\small}, label distance=8pt]
+        (S1) edge [above] node[above=4pt] {$hit\And(sys\_rd\oplus sys\_wr)$} (S3)
+        (S1) edge  node[sloped] {$ hit = 0$} (S2)
+        (S2) edge  node[sloped] {} (S7)
+        (S7) edge  node[sloped] {$ram\_rack = 1$} (S6)
+        (S6) edge  node {$ $} (S3)
+        (S3) edge  node[above, sloped] {$Read$} (S4)
+        (S3) edge  node[above, sloped] {$Write$} (S5)
+        (S5) edge  node {$ $} (S4)
+        (S4) edge  node {$ $} (S1); 
+    \end{tikzpicture}\\
+    \begin{figure}[h!]
+		\caption{Граф состояний контроллера кэш-памяти}
+	\end{figure}\\
+	\begin{figure}[h!]
     	\begin{center}
         	\begin{circuitikz}
                 \ctikzset{multipoles/thickness=3}
@@ -491,30 +516,6 @@
             \end{circuitikz}
     	\end{center}
     	\caption{УГО кэш-контроллера}
-	\end{figure}\\
-
-    \begin{tikzpicture}[->, >=stealth', shorten >=1pt, auto, node    distance=4cm,thick, main node/.style={circle, draw, font=\sffamily\Large}]
-    \node[initial right, state] (S1) {$IDLE$};
-    \node[state] (S2) [below=of S1] {$RRAM$};
-    \node[state] (S7) [below=of S2] {$WAIT$};
-    \node[state] (S3) [left=of S1] {$SELECT$};
-    \node[state] (S4) [below left=of S3] {$ACK$};
-    \node[state] (S5) [right=2cm of S4] {$WRITE_{CR}$};
-    \node[state] (S6) [left= 2cm of S2] {$WRITE_C$};
-    
-    \path[every node/.style={font=\sffamily\small}, label distance=9pt]
-        (S1) edge [above] node[above=4pt] {$hit\And(sys\_rd\oplus sys\_wr)$} (S3)
-        (S1) edge  node[sloped] {$ hit = 0$} (S2)
-        (S2) edge  node[sloped] {} (S7)
-        (S7) edge  node[sloped] {$ram\_rack = 1$} (S6)
-        (S6) edge  node {$ $} (S3)
-        (S3) edge  node[above, sloped] {$Read$} (S4)
-        (S3) edge  node[above, sloped] {$Write$} (S5)
-        (S5) edge  node {$ $} (S4)
-        (S4) edge  node {$ $} (S1); 
-    \end{tikzpicture}\\
-    \begin{figure}[h!]
-		\caption{Граф состояний контроллера кэш-памяти}
 	\end{figure}\\
     Описание состояний:\\
     - \textbf{IDLE} - начальное состояние. В этом состоянии кэш-память ожидает прихода операции.;\\
